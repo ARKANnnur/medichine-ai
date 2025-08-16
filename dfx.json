@@ -9,10 +9,16 @@
         "event_backend"
       ],
       "source": [
-        "src/event_frontend/dist"
+        "src/event_frontend/out"
       ],
       "type": "assets",
-      "workspace": "event_frontend"
+      "workspace": "event_frontend",
+      "security": [
+        {
+          "match": "**/*",
+          "security_policy": "hardened"
+        }
+      ]
     }
   },
   "defaults": {
