@@ -49,12 +49,6 @@
       "regex": "^/variant\\-3(?:/)?$",
       "routeKeys": {},
       "namedRegex": "^/variant\\-3(?:/)?$"
-    },
-    {
-      "page": "/variant-4",
-      "regex": "^/variant\\-4(?:/)?$",
-      "routeKeys": {},
-      "namedRegex": "^/variant\\-4(?:/)?$"
     }
   ],
   "dataRoutes": [],

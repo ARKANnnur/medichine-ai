@@ -2,7 +2,6 @@
   "/_not-found/page": "app/_not-found/page.js",
   "/favicon.ico/route": "app/favicon.ico/route.js",
   "/page": "app/page.js",
-  "/variant-3/page": "app/variant-3/page.js",
   "/variant-2/page": "app/variant-2/page.js",
-  "/variant-4/page": "app/variant-4/page.js"
+  "/variant-3/page": "app/variant-3/page.js"
 }

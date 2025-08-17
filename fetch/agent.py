@@ -20,29 +20,30 @@ ASI1_HEADERS = {
 }
 
 # Contoh query sederhana
-query = "What is the current Bitcoin network fee percentile?"
+def searchObatAI(query: str):
+    """
+    Hit AI jika obat tidak ada di canister.
+    Kembalikan list dict: [{ 'apotek': 'AI', 'obat': { 'nama': ..., 'harga': 0 } }]
+    """
+    payload = {
+        "model": "asi1-mini",
+        "messages": [{"role": "user", "content": f"Carikan informasi obat: {query}"}],
+        "temperature": 0.7,
+        "max_tokens": 200
+    }
 
-payload = {
-    "model": "asi1-mini",
-    "messages": [{"role": "user", "content": query}],
-    "temperature": 0.7,
-    "max_tokens": 200
-}
+    response = requests.post(
+        f"{ASI1_BASE_URL}/chat/completions",
+        headers=ASI1_HEADERS,
+        json=payload
+    )
+    response.raise_for_status()
+    data = response.json()
 
-response = requests.post(
-    f"{ASI1_BASE_URL}/chat/completions",
-    headers=ASI1_HEADERS,
-    json=payload
-)
+    message = data["choices"][0]["message"]["content"]
 
-response.raise_for_status()
-data = response.json()
-
-# Print hasil output dari model
-print(json.dumps(data, indent=2))
-print("\nFinal model message:")
-print(data["choices"][0]["message"]["content"])
-
+    # Return hasil sesuai format FE: apotek = "AI", harga = 0 (dummy)
+    return [{"apotek": "AI", "obat": {"nama": message.strip(), "harga": 0}}]
 
 """
 Queries for /get-balance

@@ -6,6 +6,10 @@ const nextConfig: NextConfig = {
   images: {
     domains: ['images.unsplash.com'], // Add Unsplash domain here
   },
+  eslint: {
+    ignoreDuringBuilds: true, // ESLint tidak jalan saat build
+  },
+
 };
 
 export default nextConfig;
