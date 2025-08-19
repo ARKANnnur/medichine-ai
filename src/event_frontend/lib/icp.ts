@@ -1,6 +1,7 @@
 import { HttpAgent, Actor } from "@dfinity/agent";
 import { idlFactory as event_idl } from "../../../.dfx/local/canisters/event_backend/service.did.js";
 import canisterIds from "../../../.dfx/local/canister_ids.json";
+import { ObatAIResult } from "./agentAI.js";
 
 const CANISTER_ID = canisterIds.event_backend.local; // otomatis ambil ID terbaru
 
@@ -62,17 +63,38 @@ export async function getObat() {
 export async function searchObat(namaObat: string) {
     const result = (await eventActor.searchObat(namaObat)) as {
         apotek: string;
+        alamat: string; // ⬅️ ini mesti ditambah
         obat: { nama: string; harga: bigint };
     }[];
 
     // Convert harga bigint → number
     return result.map(item => ({
         apotek: item.apotek,
+        alamat: item.alamat, // ⬅️ mapping balik juga
         obat: {
             nama: item.obat.nama,
-            harga: Number(item.obat.harga) // hati-hati overflow jika harga besar
+            harga: Number(item.obat.harga)
         }
     }));
+}
+
+
+export async function tambahObatDanApotek(aiData: ObatAIResult[]) {
+    // 1. Ambil daftar apotek yang sudah ada
+    const existingApotek = (await getApotek()) as string[];
+
+
+    for (const item of aiData) {
+        // 2. Tambah apotek jika belum ada
+        if (!existingApotek.includes(item.apotek)) {
+            await tambahApotek(item.apotek, item.alamat, item.lat, item.lon);
+            existingApotek.push(item.apotek);
+        }
+
+        // 3. Tambah obat ke apotek
+        const hargaBigInt = BigInt(item.harga);
+        await tambahObat(item.apotek, item.obat, hargaBigInt);
+    }
 }
 
 

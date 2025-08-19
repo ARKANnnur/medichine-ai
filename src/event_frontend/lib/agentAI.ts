@@ -10,29 +10,63 @@ export type ObatAIResult = {
     harga: string;
 };
 
-const ASI1_API_KEY = "sk_4391d7076f734dc782b268f92833c7bb442dc9d304da4f35863e67cf0632aee6"; // masukkan API key kamu
-const ASI1_BASE_URL = "https://api.asi1.ai/v1";
+const OPENROUTER_API_KEY = "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"; // ganti dengan API key openrouter
+const OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1/chat/completions";
 
 export async function searchObatAI(query: string): Promise<ObatAIResult[]> {
     try {
         const payload = {
-            model: "asi1-mini",
-            messages: [{ role: "user", content: `berikakn aku data harga obat ${query} di apotek daerah Cicaheum bandung, formatnya gini, json gini [{ apotek: "Apotek AI", alamat:" ", lat: 0, lon: 0, obat: "", nama: "Paracetamol", harga: "5000', }, ...]` }],
+            model: "deepseek/deepseek-chat-v3-0324:free",
+            messages: [
+                {
+                    role: "user",
+                    content: `Berikan aku data harga **semua jenis/varian obat** yang mengandung nama "${query}" 
+      (misalnya ukuran berbeda, dosis berbeda, varian lain) di apotek nyata sekitar Cicaheum, Bandung. 
+
+      Balas **hanya dengan format JSON** seperti ini, tanpa teks tambahan:
+
+      [ { "apotek": "Nama Apotek", "alamat": "Alamat lengkap", "lat": -6.xxxx, "lon": 107.xxxx, "obat": "${query}", "harga": "angka" } ]
+      - Gunakan data **real** sebanyak yang tersedia.
+      - Jangan tambahkan teks lain di luar JSON.`
+                }
+            ],
             temperature: 0.7,
-            max_tokens: 200,
+            max_tokens: 700,
         };
 
-        const response = await axios.post(`${ASI1_BASE_URL}/chat/completions`, payload, {
+
+
+
+        const response = await axios.post(OPENROUTER_BASE_URL, payload, {
             headers: {
-                Authorization: `Bearer ${ASI1_API_KEY}`,
+                Authorization: `Bearer ${OPENROUTER_API_KEY}`,
                 "Content-Type": "application/json",
+                "HTTP-Referer": "http://localhost:3000", // optional, bisa isi domain kamu
+                "X-Title": "Obat Finder",                // optional
             },
         });
 
         const message = response.data.choices[0].message.content;
 
-        // Return selalu dengan format lengkap
-        return message;
+        let jsonString = message;
+
+        // buang block markdown
+        jsonString = jsonString.replace(/```json/g, "").replace(/```/g, "").trim();
+
+        // kalau masih ada teks lain, ambil array JSON pertama
+        const match = jsonString.match(/\[[\s\S]*\]/);
+        if (match) {
+            jsonString = match[0];
+        }
+
+        try {
+            return JSON.parse(jsonString);
+        } catch (e) {
+            console.error("Gagal parse JSON dari model:", e, jsonString);
+            return [];
+        }
+
+
     } catch (err) {
         console.error("Error searchObatAI:", err);
         return [];

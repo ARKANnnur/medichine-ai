@@ -1,7 +1,7 @@
 'use client';
 import { useState } from 'react';
 import type React from 'react';
-import { searchObat } from '../../lib/icp';
+import { searchObat, tambahObatDanApotek } from '../../lib/icp';
 import { searchObatAI } from '../../lib/agentAI';
 
 export default function VibrantVariant() {
@@ -14,7 +14,7 @@ export default function VibrantVariant() {
     alamat: string;
     obat: {
       nama: string;
-      harga: number;
+      harga: BigInt;
     };
   };
 
@@ -28,37 +28,44 @@ export default function VibrantVariant() {
       console.log("Hasil search dari canister:", results);
 
       if (results.length > 0) {
-        // Map hasil biar sesuai ObatResult
+        // Tampilkan hasil canister
         const mapped: ObatResult[] = results.map((r: any) => ({
           apotek: r.apotek,
           alamat: r.alamat ?? "", // fallback kosong kalau candid lama belum ada alamat
           obat: {
             nama: r.obat.nama,
-            harga: Number(r.obat.harga),
+            harga: BigInt(r.obat.harga),
           },
         }));
 
         setSearchResults(mapped);
       } else {
-        // Tidak ada hasil → baru hit AI
-        const aiResults = await searchObatAI(query); // misal fungsi untuk hit AI
+        // Tidak ada hasil → hit AI
+        const aiResults = await searchObatAI(query);
         console.log("Hasil search dari AI:", aiResults);
-        try {
-          const results = await searchObat(query);
-          console.log("Hasil search dari canister:", results);
-          const mapped: ObatResult[] = results.map((r: any) => ({
+
+        if (aiResults.length > 0) {
+          // Simpan data AI ke canister
+          await tambahObatDanApotek(aiResults);
+
+          // Ambil ulang dari canister supaya data konsisten
+          const resultsFromCanister = await searchObat(query);
+
+          const mappedFromCanister: ObatResult[] = resultsFromCanister.map((r: any) => ({
             apotek: r.apotek,
-            alamat: r.alamat ?? "", // fallback kosong kalau candid lama belum ada alamat
+            alamat: r.alamat,
             obat: {
               nama: r.obat.nama,
-              harga: Number(r.obat.harga),
+              harga: BigInt(r.obat.harga),
             },
           }));
 
-        } catch (error) {
-          console.error("Error searchObat:", error);
+          console.log("Hasil search dari Canister NEw:", mappedFromCanister);
+
+          setSearchResults(mappedFromCanister);
         }
       }
+
     } catch (err) {
       console.error("Error searchObat:", err);
     } finally {
@@ -246,24 +253,14 @@ export default function VibrantVariant() {
                           </svg>
                         </div>
                         <div>
-                          <h4 className="text-2xl font-bold text-gray-800 mb-2">
+                          <h4 className="text-2xl font-bold text-gray-800 mb-1">
                             {item.apotek}
                           </h4>
-                          {/* <div className="flex items-center">
-                            <span
-                              className={`inline-flex items-center px-4 py-2 rounded-full text-sm font-bold shadow-lg ${item.stok
-                                  ? 'bg-gradient-to-r from-green-400 to-green-600 text-white'
-                                  : 'bg-gradient-to-r from-red-400 to-red-600 text-white'
-                                }`}
-                            >
-                              <div
-                                className={`w-3 h-3 rounded-full mr-2 ${item.stok ? 'bg-green-200' : 'bg-red-200'
-                                  }`}
-                              ></div>
-                              {item.stok ? 'Tersedia' : 'Habis'}
-                            </span>
-                          </div> */}
+                          <h5 className="text-xl font-semibold text-gray-700 mb-2">
+                            Obat: {item.obat.nama}
+                          </h5>
                         </div>
+
                       </div>
                       <div className="text-right">
                         <div className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-1">
@@ -293,7 +290,7 @@ export default function VibrantVariant() {
                           d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
                         />
                       </svg>
-                      <span className="font-medium">{item.alamat}</span>
+                      <span className="font-medium text-dark">{item.alamat}</span>
                     </div>
 
                     <div className="flex gap-4">
@@ -408,51 +405,51 @@ export default function VibrantVariant() {
       </div>
 
       <style jsx>{`
-        @keyframes blob {
-          0% {
-            transform: translate(0px, 0px) scale(1);
+          @keyframes blob {
+            0% {
+              transform: translate(0px, 0px) scale(1);
+            }
+            33% {
+              transform: translate(30px, -50px) scale(1.1);
+            }
+            66% {
+              transform: translate(-20px, 20px) scale(0.9);
+            }
+            100% {
+              transform: translate(0px, 0px) scale(1);
+            }
           }
-          33% {
-            transform: translate(30px, -50px) scale(1.1);
+
+          @keyframes float {
+            0%,
+            100% {
+              transform: translateY(0px);
+            }
+            50% {
+              transform: translateY(-20px);
+            }
           }
-          66% {
-            transform: translate(-20px, 20px) scale(0.9);
+
+          .animate-blob {
+            animation: blob 7s infinite;
           }
-          100% {
-            transform: translate(0px, 0px) scale(1);
+
+          .animate-float {
+            animation: float 3s ease-in-out infinite;
           }
-        }
 
-        @keyframes float {
-          0%,
-          100% {
-            transform: translateY(0px);
+          .animation-delay-2000 {
+            animation-delay: 2s;
           }
-          50% {
-            transform: translateY(-20px);
+
+          .animation-delay-4000 {
+            animation-delay: 4s;
           }
-        }
 
-        .animate-blob {
-          animation: blob 7s infinite;
-        }
-
-        .animate-float {
-          animation: float 3s ease-in-out infinite;
-        }
-
-        .animation-delay-2000 {
-          animation-delay: 2s;
-        }
-
-        .animation-delay-4000 {
-          animation-delay: 4s;
-        }
-
-        .animation-delay-1000 {
-          animation-delay: 1s;
-        }
-      `}</style>
+          .animation-delay-1000 {
+            animation-delay: 1s;
+          }
+        `}</style>
     </div>
   );
 }
