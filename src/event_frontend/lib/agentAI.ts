@@ -10,7 +10,7 @@ export type ObatAIResult = {
     harga: string;
 };
 
-const OPENROUTER_API_KEY = "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"; // ganti dengan API key openrouter
+const OPENROUTER_API_KEY = "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"; // ganti dengan API key openrouter
 const OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1/chat/completions";
 
 export async function searchObatAI(query: string): Promise<ObatAIResult[]> {

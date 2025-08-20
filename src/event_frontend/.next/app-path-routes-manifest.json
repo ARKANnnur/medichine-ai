@@ -1,7 +1,7 @@
 {
   "/_not-found/page": "/_not-found",
   "/favicon.ico/route": "/favicon.ico",
-  "/variant-3/page": "/variant-3",
   "/page": "/",
-  "/variant-2/page": "/variant-2"
+  "/variant-2/page": "/variant-2",
+  "/variant-3/page": "/variant-3"
 }
