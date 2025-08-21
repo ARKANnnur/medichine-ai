@@ -3,18 +3,29 @@ import { useState } from 'react';
 import type React from 'react';
 import { searchObat, tambahObatDanApotek } from '../../lib/icp';
 import { searchObatAI } from '../../lib/agentAI';
+import LocationSearch  from '@/components/location-search'
 
 export default function VibrantVariant() {
   const [query, setQuery] = useState('');
   const [isSearching, setIsSearching] = useState(false);
   const [searchResults, setSearchResults] = useState<ObatResult[]>([]);
+  const [location, setLocation] = useState("")
+
+  const handleSelectLocation = (location: {
+    address: string;
+    lat: number;
+    lng: number;
+  }) => {
+    console.log("Lokasi dipilih:", location);
+    setLocation(`Lokasi: ${location.address}\nLat: ${location.lat}\nLng: ${location.lng}`);
+  };
 
   type ObatResult = {
     apotek: string;
     alamat: string;
     obat: {
       nama: string;
-      harga: BigInt;
+      harga: bigint;
     };
   };
 
@@ -41,7 +52,7 @@ export default function VibrantVariant() {
         setSearchResults(mapped);
       } else {
         // Tidak ada hasil → hit AI
-        const aiResults = await searchObatAI(query);
+        const aiResults = await searchObatAI(query, location);
         console.log("Hasil search dari AI:", aiResults);
 
         if (aiResults.length > 0) {
@@ -184,7 +195,7 @@ export default function VibrantVariant() {
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
                     onKeyPress={handleKeyPress}
-                    className="w-full pl-12 pr-6 py-5 text-lg border-3 border-blue-200 rounded-2xl focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all duration-300 outline-none shadow-lg"
+                    className="w-full pl-12 pr-6 py-5 text-lg text-black border-3 border-blue-200 rounded-2xl focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all duration-300 outline-none shadow-lg"
                   />
                 </div>
                 <button
@@ -216,7 +227,10 @@ export default function VibrantVariant() {
                     </div>
                   )}
                 </button>
+
               </div>
+              <LocationSearch onSelectLocation={handleSelectLocation} />
+
             </div>
           </div>
         </div>

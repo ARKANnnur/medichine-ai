@@ -1,5 +1,6 @@
 import requests
 import json
+from dotenv import load_dotenv
 from uagents_core.contrib.protocols.chat import (
     chat_protocol_spec,
     ChatMessage,
@@ -11,9 +12,12 @@ from uagents import Agent, Context, Protocol
 from datetime import datetime, timezone, timedelta
 from uuid import uuid4
 
-# ASI1 API settings
-ASI1_API_KEY = "sk_4391d7076f734dc782b268f92833c7bb442dc9d304da4f35863e67cf0632aee6"  # Replace with your ASI1 key
-ASI1_BASE_URL = "https://api.asi1.ai/v1"
+# Load environment variables from .env file
+load_dotenv()
+
+# Ambil dari environment
+ASI1_API_KEY = os.getenv("ASI1_API_KEY")
+ASI1_BASE_URL = os.getenv("ASI1_BASE_URL")
 ASI1_HEADERS = {
     "Authorization": f"Bearer {ASI1_API_KEY}",
     "Content-Type": "application/json"

@@ -10,18 +10,18 @@ export type ObatAIResult = {
     harga: string;
 };
 
-const OPENROUTER_API_KEY = "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"; // ganti dengan API key openrouter
-const OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1/chat/completions";
+const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY; // ganti dengan API key openrouter
+const OPENROUTER_BASE_URL = process.env.OPENROUTER_BASE_URL;
 
-export async function searchObatAI(query: string): Promise<ObatAIResult[]> {
+export async function searchObatAI(query: string, location: string): Promise<ObatAIResult[]> {
     try {
         const payload = {
             model: "deepseek/deepseek-chat-v3-0324:free",
             messages: [
                 {
                     role: "user",
-                    content: `Berikan aku data harga **semua jenis/varian obat** yang mengandung nama "${query}" 
-      (misalnya ukuran berbeda, dosis berbeda, varian lain) di apotek nyata sekitar Cicaheum, Bandung. 
+                    content: `Berikan aku data harga **semua jenis/varian obat** yang mengandung nama "${query}"
+      (misalnya ukuran berbeda, dosis berbeda, varian lain) di apotek nyata sekitar ${location}.
 
       Balas **hanya dengan format JSON** seperti ini, tanpa teks tambahan:
 
